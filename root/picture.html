@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>图片</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex; /* 将 body 设置为弹性布局 */
+            flex-wrap: nowrap; /* 禁止缩略图换行 */
+            justify-content: flex-start; /* 横向左对齐 */
+        }
+
+        .fileItem {
+            width: 200px;
+            margin: 10px;
+            text-align: center; /* 居中文本 */
+            display: inline-block; /* 横向排列 */
+        }
+
+        .fileName {
+            font-weight: bold;
+            margin-bottom: 5px; /* 文件名下方留白 */
+        }
+
+        .thumbnailImage {
+            width: 100%;
+            height: auto;
+            cursor: pointer; /* 鼠标指针显示为手型 */
+        }
+
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #modalImage {
+            max-width: 90%;
+            max-height: 90%;
+        }
+    </style>
+</head>
+<body>
+<div id="fileList"></div>
+
+<div id="modal">
+    <img id="modalImage">
+</div>
+
+<script>
+    function fetchFileList() {
+        var folderPath = "/8pictures"; // 文件夹路径（需要更改为实际的文件夹路径）
+        var updatedFolderPath = folderPath.replace(/[0-9]/g, '');
+        var fileListElement = document.getElementById('fileList');
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var fileNames = this.responseText.split('\n'); // 将响应文本按换行符分割成文件名数组
+
+                for (var i = 0; i < fileNames.length; i++) {
+                    if (fileNames[i].trim() !== '') {
+                        var fileItemElement = document.createElement('div');
+                        fileItemElement.classList.add('fileItem');
+
+                        var fileNameElement = document.createElement('p');
+                        fileNameElement.classList.add('fileName');
+                        fileNameElement.innerText = fileNames[i];
+                        fileItemElement.appendChild(fileNameElement);
+
+                        var thumbnailImageElement = document.createElement('img');
+                        thumbnailImageElement.classList.add('thumbnailImage');
+                        thumbnailImageElement.src = updatedFolderPath + '/' + fileNames[i]; // 设置原始图像路径
+
+                        thumbnailImageElement.addEventListener('load', createThumbnailHandler(fileItemElement, thumbnailImageElement));
+
+                        fileListElement.appendChild(fileItemElement);
+                    }
+                }
+            }
+        };
+        xhttp.open("GET", folderPath, true);
+        xhttp.send();
+    }
+
+    function createThumbnailHandler(fileItemElement, thumbnailImageElement) {
+        return function () {
+            var canvas = document.createElement('canvas');
+            var context = canvas.getContext('2d');
+            var width = thumbnailImageElement.width;
+            var height = thumbnailImageElement.height;
+
+            var scale = 0.2; // 缩略图比例
+
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+
+            context.drawImage(thumbnailImageElement, 0, 0, width, height, 0, 0, width * scale, height * scale);
+
+            var thumbnailDataURL = canvas.toDataURL(); // 获取缩略图的数据URL
+
+            var thumbnailImage = new Image(); // 创建一个新的Image对象
+            thumbnailImage.classList.add('thumbnailImage');
+            thumbnailImage.src = thumbnailDataURL; // 设置缩略图的数据URL
+
+            // 添加点击事件处理程序，显示完整图像
+            thumbnailImage.addEventListener('click', function () {
+                var modal = document.getElementById('modal');
+                var modalImage = document.getElementById('modalImage');
+                modalImage.src = thumbnailImageElement.src; // 设置完整图像的URL
+                modal.style.display = 'flex'; // 显示模态框
+            });
+
+            fileItemElement.appendChild(thumbnailImage);
+        }
+    }
+
+    window.onload = function () {
+        fetchFileList();
+    };
+
+    // 点击模态框外部关闭模态框
+    document.getElementById('modal').addEventListener('click', function (event) {
+        if (event.target === this) {
+            this.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>
+

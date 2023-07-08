@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>文件列表</title>
+    <style>
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <ul id="fileList"></ul>
+
+    <script>
+        // 文件夹路径
+        var folderPath = "./files";
+
+        // 获取文件列表
+        fetchFileList(folderPath);
+
+        function fetchFileList(folderPath) {
+            // 发起 AJAX 请求或执行适当的服务器端代码来获取文件列表
+            // 这里使用简化的 fetch API 示例
+            fetch(folderPath)
+                .then(function(response) {
+                    return response.text();
+                })
+                .then(function(data) {
+                    // 清空文件列表
+                    var fileListElement = document.getElementById('fileList');
+                    fileListElement.innerHTML = '';
+
+                    // 解析 HTML 文本，查找所有 <a> 标签并添加到文件列表
+                    var parser = new DOMParser();
+                    var htmlDoc = parser.parseFromString(data, 'text/html');
+                    var links = htmlDoc.getElementsByTagName('a');
+
+                    for (var i = 0; i < links.length; i++) {
+                        var listItem = document.createElement('li');
+                        listItem.textContent = links[i].textContent;
+                        fileListElement.appendChild(listItem);
+                    }
+                })
+                .catch(function(error) {
+                    console.error('无法获取文件列表:', error);
+                });
+        }
+    </script>
+</body>
+</html>
+

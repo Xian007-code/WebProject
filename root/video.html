@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>视频</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex; /* 将 body 设置为弹性布局 */
+            flex-wrap: nowrap; /* 禁止缩略视频换行 */
+            justify-content: flex-start; /* 横向左对齐 */
+        }
+
+        .fileItem {
+            width: 200px;
+            margin: 10px;
+            text-align: center; /* 居中文本 */
+            display: inline-block; /* 横向排列 */
+        }
+
+        .fileName {
+            font-weight: bold;
+            margin-bottom: 5px; /* 文件名下方留白 */
+        }
+
+        .thumbnailVideo {
+            width: 100%;
+            height: auto;
+            cursor: pointer; /* 鼠标指针显示为手型 */
+            object-fit: cover; /* 视频保持比例 */
+            transition: transform 0.3s ease-in-out; /* 动画效果 */
+        }
+
+        .thumbnailVideo:hover {
+            transform: scale(1.1); /* 鼠标悬停时放大 */
+        }
+
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        #modalVideo {
+            max-width: 90%;
+            max-height: 90%;
+        }
+    </style>
+</head>
+<body>
+<div id="fileList"></div>
+
+<div id="modal">
+    <video id="modalVideo" controls></video>
+</div>
+
+<script>
+    function fetchFileList() {
+        var folderPath = "/8videos"; // 文件夹路径（需要更改为实际的文件夹路径）
+        var updatedFolderPath = folderPath.replace(/[0-9]/g, '');
+        var fileListElement = document.getElementById('fileList');
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var fileNames = this.responseText.split('\n'); // 将响应文本按换行符分割成文件名数组
+
+                for (var i = 0; i < fileNames.length; i++) {
+                    if (fileNames[i].trim() !== '') {
+                        var fileItemElement = document.createElement('div');
+                        fileItemElement.classList.add('fileItem');
+
+                        var fileNameElement = document.createElement('p');
+                        fileNameElement.classList.add('fileName');
+                        fileNameElement.innerText = fileNames[i];
+                        fileItemElement.appendChild(fileNameElement);
+
+                        var thumbnailVideoElement = document.createElement('video');
+                        thumbnailVideoElement.classList.add('thumbnailVideo');
+                        thumbnailVideoElement.src = updatedFolderPath + '/' + fileNames[i]; // 设置原始视频路径
+                        thumbnailVideoElement.muted = true; // 静音播放
+
+                        thumbnailVideoElement.addEventListener('mouseover', function () {
+                            this.play(); // 鼠标悬停时播放视频
+                        });
+
+                        thumbnailVideoElement.addEventListener('mouseout', function () {
+                            this.pause(); // 鼠标离开时暂停视频
+                            this.currentTime = 0; // 重置播放时间
+                        });
+
+                        thumbnailVideoElement.addEventListener('click', function () {
+                            var modal = document.getElementById('modal');
+                            var modalVideo = document.getElementById('modalVideo');
+
+                            modalVideo.src = this.src; // 设置完整视频的URL
+                            modal.style.display = 'flex'; // 显示模态框
+                        });
+
+                        fileItemElement.appendChild(thumbnailVideoElement);
+                        fileListElement.appendChild(fileItemElement);
+                    }
+                }
+            }
+        };
+        xhttp.open("GET", folderPath, true);
+        xhttp.send();
+    }
+
+    window.onload = function () {
+        fetchFileList();
+    };
+
+    // 点击模态框外部关闭模态框
+    document.getElementById('modal').addEventListener('click', function (event) {
+        if (event.target === this) {
+            this.style.display = 'none';
+            document.getElementById('modalVideo').pause();
+            document.getElementById('modalVideo').currentTime = 0;
+        }
+    });
+</script>
+</body>
+</html>
+

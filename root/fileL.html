@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>文件夹列表</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+.buttonContainer button:active .buttonText {
+    background-color: #45a049;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.buttonContainer {
+    position: relative;
+}
+
+.buttonContainer button {
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+}
+
+.spacer {
+    width: 100px; /* 设置空白的宽度 */
+    display: inline-block; /* 将空白元素显示为 inline-block 类型，使其处于按钮元素之间 */
+}
+.spacer2 {
+    width: 250px; /* 设置空白的宽度 */
+    display: inline-block; /* 将空白元素显示为 inline-block 类型，使其处于按钮元素之间 */
+}
+
+.buttonContainer button .buttonText {
+    display: block;
+    padding: 10px 20px;
+    background-color: #0080FF;
+    color: #fff;
+    transition: background-color 0.3s ease;
+    border-radius: 50px;
+    text-align: center;
+    box-shadow: 0px 4px 7px rgba(0, 0, 0, 0.2);
+}
+
+.buttonContainer button .buttonRipple {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.5);
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.3s, opacity 0.3s;
+    border-radius: 50%; /* 添加圆角属性 */
+    mix-blend-mode: multiply; /* 添加混合模式属性 */
+}
+
+.buttonContainer button:hover .buttonText {
+    background-color: #45a049;
+}
+
+.buttonContainer button:focus {
+    outline: none;
+}
+
+.buttonContainer button:active .buttonRipple {
+    transform: scale(1);
+    opacity: 1;
+    width: 200%;
+    height: 200%;
+}
+
+
+#fileList {
+    margin-top: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+#fileList p {
+    margin: 0;
+}
+
+#fileList a {
+    color: #0000FF;
+    text-decoration: none;
+}
+
+.fileItem {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #f5f5f5;
+    margin-bottom: 10px;
+}
+
+.fileItem:hover {
+    background-color: #e0e0e0;
+}
+
+.fileName {
+    flex-grow: 1;
+    margin-left: 10px;
+    font-weight: bold;
+}
+</style>
+<script>
+function fetchFileList() {
+    var folderPath = "/8files"; // 文件夹路径（需要更改为实际的文件夹路径）
+    var updatedFolderPath = folderPath.replace(/[0-9]/g, '');
+    var buttonElement = document.getElementById('fetchButton');
+    buttonElement.classList.add('loading'); // 添加 loading 样式类
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var fileListElement = document.getElementById('fileList');
+            var fileNames = this.responseText.split('\n'); // 将响应文本按换行符分割成文件名数组
+            var fileListHTML = ''; // 存储生成的文件列表 HTML
+
+            for (var i = 0; i < fileNames.length; i++) {
+                if (fileNames[i].trim() !== '') {
+                    fileListHTML += '<div class="fileItem"><a href="' + updatedFolderPath + '/' + fileNames[i] + '" download>' + fileNames[i] + '</a></div>'; // 使用 <a> 标签创建链接，并包装每个文件名
+                }
+            }
+
+            fileListElement.innerHTML = fileListHTML;
+            buttonElement.classList.remove('loading'); // 移除 loading 样式类
+        }
+    };
+    xhttp.open("GET", folderPath, true);
+    xhttp.send();
+}
+
+
+
+
+</script>
+</head>
+<body>
+<div class="buttonContainer">
+
+<button id="fetchButton" onclick="fetchFileList()">
+<span class="buttonText">获取文件列表</span>
+<span class="buttonRipple"></span>
+</button>
+<div id="fileList"></div>
+
+</body>
+</html>
